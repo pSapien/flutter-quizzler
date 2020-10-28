@@ -5,6 +5,15 @@ class Quiz {
   List<bool> _scores = [];
   int _questionNum = 0;
 
+  bool isFinished() => _questionNum == _questionBank.length - 1;
+
+  int getScore() => _scores.where((score) => score == true).length;
+
+  void reset() {
+    _questionNum = 0;
+    _scores = [];
+  }
+
   void nextQuestion() {
     if (_questionNum < _questionBank.length - 1) _questionNum++;
   }
