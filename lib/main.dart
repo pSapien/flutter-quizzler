@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(App());
-}
+import 'quiz.dart';
 
-const questions = [
-  {'question': 'Question A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-  {'question': 'A', 'answer': true},
-];
+final QuizApp = Quiz();
+
+void main() => runApp(App());
 
 class App extends StatefulWidget {
   App({Key key}) : super(key: key);
@@ -25,61 +14,60 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  int _currentQuestionIdx = 0;
-  List<bool> _answers = [];
+  Widget _buildQuestion() => Expanded(
+        flex: 5,
+        child: Center(
+          child: Text(
+            QuizApp.getQuestion(),
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
 
-  Widget _buildButton(color, text, onPress) {
-    return ListTile(
-      title: RaisedButton(
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-        color: color,
-        child: Text(text, style: TextStyle(fontSize: 20)),
-        onPressed: onPress,
-      ),
-    );
-  }
+  Widget _buildChoice(String choice) => Expanded(
+        child: Container(
+          margin: EdgeInsets.symmetric(vertical: 10.0),
+          child: RaisedButton(
+            onPressed: () {
+              setState(() {
+                QuizApp.addScore(choice);
+                QuizApp.nextQuestion();
+              });
+            },
+            child: Text(choice),
+          ),
+        ),
+      );
 
-  Widget _buildQuestion() {
-    final currentQuestion = questions[_currentQuestionIdx];
-
-    void checkAnswer(userAnswer) {
-      final questionAnswer = currentQuestion['answer'];
-
-      setState(() {
-        final currAnswer = questionAnswer == userAnswer;
-        _answers.add(currAnswer);
-      });
-    }
-
-    return Column(
-      children: [
-        Text(currentQuestion['question']),
-        _buildButton(Colors.green, 'YES', () => checkAnswer(true)),
-        _buildButton(Colors.red, 'NO', () => checkAnswer(false)),
-      ],
-    );
-  }
-
-  Widget _buildScoreKeeper() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children:
-          _answers.map((answer) => Text(answer == true ? 'T' : 'F')).toList(),
-    );
-  }
+  Widget _buildScore(choice) => Icon(
+        choice == true ? Icons.check : Icons.close,
+        color: choice == true ? Colors.green : Colors.red,
+      );
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      color: Colors.teal,
       home: Scaffold(
         backgroundColor: Colors.teal,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildQuestion(),
-            _buildScoreKeeper(),
-          ],
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildQuestion(),
+                ...QuizApp.getQuestionChoices().map((e) => _buildChoice(e)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:
+                      QuizApp.getScores().map((e) => _buildScore(e)).toList(),
+                )
+              ],
+            ),
+          ),
         ),
       ),
     );
